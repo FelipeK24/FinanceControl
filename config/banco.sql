@@ -1,0 +1,163 @@
+
+CREATE DATABASE IF NOT EXISTS financecontrol
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+USE financecontrol;
+
+CREATE TABLE empresas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(150) NOT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    empresa_id INT NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    tipo ENUM('admin', 'usuario') NOT NULL DEFAULT 'usuario',
+    KEY idx_usuarios_empresa (empresa_id),
+    CONSTRAINT fk_usuarios_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresas(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE solicitacoes_redefinicao_senha (
+    usuario_id INT PRIMARY KEY,
+    solicitada_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    pendente TINYINT(1) NOT NULL DEFAULT 1,
+    resolvida_em TIMESTAMP NULL,
+
+    FOREIGN KEY (usuario_id)
+        REFERENCES usuarios(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE categorias (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    empresa_id INT NOT NULL,
+    nome VARCHAR(80) NOT NULL,
+    tipo ENUM('receita', 'despesa') NOT NULL,
+    ativa TINYINT(1) NOT NULL DEFAULT 1,
+    KEY idx_categorias_empresa (empresa_id),
+    CONSTRAINT fk_categorias_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresas(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE lancamentos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    categoria_id INT NOT NULL,
+    descricao VARCHAR(150) NOT NULL,
+    valor DECIMAL(12,2) NOT NULL,
+    tipo ENUM('receita', 'despesa') NOT NULL,
+    data DATE NOT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (usuario_id)
+        REFERENCES usuarios(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (categoria_id)
+        REFERENCES categorias(id)
+        ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE metas_financeiras (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    nome VARCHAR(120) NOT NULL,
+    descricao VARCHAR(255) NULL,
+    valor_objetivo DECIMAL(12,2) NOT NULL,
+    valor_inicial DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+    data_inicio DATE NOT NULL,
+    prazo DATE NULL,
+    status ENUM('ativa', 'pausada', 'concluida')
+        NOT NULL DEFAULT 'ativa',
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (usuario_id)
+        REFERENCES usuarios(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE contribuicoes_metas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    meta_id INT NOT NULL,
+    tipo ENUM('deposito', 'retirada') NOT NULL,
+    valor DECIMAL(12,2) NOT NULL,
+    descricao VARCHAR(150) NULL,
+    data DATE NOT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (meta_id)
+        REFERENCES metas_financeiras(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE limites_gastos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    categoria_id INT NOT NULL,
+    ano SMALLINT UNSIGNED NOT NULL,
+    mes TINYINT UNSIGNED NOT NULL,
+    valor_limite DECIMAL(12,2) NOT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY limite_usuario_categoria_mes
+        (usuario_id, categoria_id, ano, mes),
+
+    FOREIGN KEY (usuario_id)
+        REFERENCES usuarios(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (categoria_id)
+        REFERENCES categorias(id)
+        ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE recorrencias (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    categoria_id INT NOT NULL,
+    descricao VARCHAR(150) NOT NULL,
+    valor DECIMAL(12,2) NOT NULL,
+    tipo ENUM('receita', 'despesa') NOT NULL,
+    frequencia ENUM(
+        'semanal',
+        'quinzenal',
+        'mensal',
+        'anual'
+    ) NOT NULL,
+    data_inicio DATE NOT NULL,
+    proxima_data DATE NOT NULL,
+    data_fim DATE NULL,
+    ativa TINYINT(1) NOT NULL DEFAULT 1,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (usuario_id)
+        REFERENCES usuarios(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (categoria_id)
+        REFERENCES categorias(id)
+        ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+ALTER TABLE lancamentos
+ADD COLUMN recorrencia_id INT NULL,
+
+ADD UNIQUE KEY lancamento_recorrencia_data
+    (recorrencia_id, data),
+
+ADD CONSTRAINT fk_lancamento_recorrencia
+    FOREIGN KEY (recorrencia_id)
+    REFERENCES recorrencias(id)
+    ON DELETE SET NULL;
+
+SHOW TABLES;
