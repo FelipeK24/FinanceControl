@@ -12,9 +12,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 validarToken();
 
 $acao = textoPost('acao');
+if (in_array($acao, ['selecionar_empresa', 'limpar_empresa'], true)) {
+    exigirAdminGeral();
+} else {
+    exigirEmpresa();
+}
+
 $usuarioId = (int) $_SESSION['usuario_id'];
-$empresaId = (int) $_SESSION['empresa_id'];
-$ehAdmin = $_SESSION['usuario_tipo'] === 'admin';
+$empresaId = (int) ($_SESSION['empresa_id'] ?? 0);
+$ehAdmin = ehAdminEmpresa();
 
 
 
@@ -210,6 +216,35 @@ function calcularProximaDataRecorrencia(
 
 
 switch ($acao) {
+
+
+    case 'selecionar_empresa':
+
+        $empresaSelecionadaId = (int) ($_POST['empresa_id'] ?? 0);
+        $stmt = $pdo->prepare(
+            "SELECT id, nome FROM empresas WHERE id = ? LIMIT 1"
+        );
+        $stmt->execute([$empresaSelecionadaId]);
+        $empresa = $stmt->fetch();
+
+        if (!$empresa) {
+            voltar('/pages/empresas.php?erro=empresa');
+        }
+
+        $_SESSION['empresa_contexto_id'] = (int) $empresa['id'];
+        $_SESSION['empresa_id'] = (int) $empresa['id'];
+        $_SESSION['empresa_nome'] = $empresa['nome'];
+
+        voltar('/pages/dashboard.php');
+
+
+    case 'limpar_empresa':
+
+        unset($_SESSION['empresa_contexto_id']);
+        $_SESSION['empresa_id'] = 0;
+        $_SESSION['empresa_nome'] = 'Admin geral';
+
+        voltar('/pages/empresas.php');
 
 
     

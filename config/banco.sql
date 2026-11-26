@@ -13,11 +13,11 @@ CREATE TABLE empresas (
 
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    empresa_id INT NOT NULL,
+    empresa_id INT NULL,
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
-    tipo ENUM('admin', 'usuario') NOT NULL DEFAULT 'usuario',
+    tipo ENUM('superadmin', 'admin', 'usuario') NOT NULL DEFAULT 'usuario',
     KEY idx_usuarios_empresa (empresa_id),
     CONSTRAINT fk_usuarios_empresa
         FOREIGN KEY (empresa_id)

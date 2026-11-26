@@ -4,34 +4,49 @@ COLLATE utf8mb4_unicode_ci;
 
 USE financecontrol;
 
+CREATE TABLE empresas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(150) NOT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    empresa_id INT NULL,
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
-    tipo ENUM('admin', 'usuario') NOT NULL DEFAULT 'usuario'
+    tipo ENUM('superadmin', 'admin', 'usuario') NOT NULL DEFAULT 'usuario',
+    KEY idx_usuarios_empresa (empresa_id),
+    CONSTRAINT fk_usuarios_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresas(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE solicitacoes_redefinicao_senha (
+    usuario_id INT PRIMARY KEY,
+    solicitada_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    pendente TINYINT(1) NOT NULL DEFAULT 1,
+    resolvida_em TIMESTAMP NULL,
+
+    FOREIGN KEY (usuario_id)
+        REFERENCES usuarios(id)
+        ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 CREATE TABLE categorias (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    empresa_id INT NOT NULL,
     nome VARCHAR(80) NOT NULL,
-    tipo ENUM('receita', 'despesa') NOT NULL
+    tipo ENUM('receita', 'despesa') NOT NULL,
+    ativa TINYINT(1) NOT NULL DEFAULT 1,
+    KEY idx_categorias_empresa (empresa_id),
+    CONSTRAINT fk_categorias_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresas(id)
+        ON DELETE CASCADE
 ) ENGINE=InnoDB;
-
-INSERT INTO categorias (nome, tipo) VALUES
-('Salário', 'receita'),
-('Investimentos', 'receita'),
-('Vendas', 'receita'),
-('Outros ganhos', 'receita'),
-('Alimentação', 'despesa'),
-('Moradia', 'despesa'),
-('Transporte', 'despesa'),
-('Saúde', 'despesa'),
-('Educação', 'despesa'),
-('Lazer', 'despesa'),
-('Compras', 'despesa'),
-('Contas', 'despesa'),
-('Outras despesas', 'despesa');
 
 CREATE TABLE lancamentos (
     id INT AUTO_INCREMENT PRIMARY KEY,

@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../includes/auth.php';
 
-exigirLogin();
+exigirEmpresa();
 
 $usuarioId = (int) $_SESSION['usuario_id'];
 

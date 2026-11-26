@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/includes/auth.php';
 
-exigirLogin();
+exigirEmpresa();
 
 
 
@@ -10,7 +10,7 @@ exigirLogin();
 
 $usuarioId = $_SESSION['usuario_id'];
 $empresaId = (int) $_SESSION['empresa_id'];
-$ehAdmin = $_SESSION['usuario_tipo'] === 'admin';
+$ehAdmin = ehAdminEmpresa();
 
 
 

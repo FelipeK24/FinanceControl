@@ -4,7 +4,9 @@ require_once __DIR__ . '/config/conexao.php';
 
 if (isset($_SESSION['usuario_id'])) {
 
-    header('Location: /pages/dashboard.php');
+    header('Location: ' . ($_SESSION['usuario_tipo'] === 'superadmin'
+        ? '/pages/empresas.php'
+        : '/pages/dashboard.php'));
     exit;
 
 }
@@ -19,9 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $senha = $_POST['senha'] ?? '';
 
             $sql = "SELECT u.id, u.nome, u.email, u.senha, u.tipo, u.empresa_id,
-                   e.nome AS empresa_nome
+                         e.nome AS empresa_nome
             FROM usuarios u
-                INNER JOIN empresas e ON e.id = u.empresa_id
+                     LEFT JOIN empresas e ON e.id = u.empresa_id
             WHERE u.email = ?
             LIMIT 1";
 
@@ -37,10 +39,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['usuario_id'] = $usuario['id'];
         $_SESSION['usuario_nome'] = $usuario['nome'];
         $_SESSION['usuario_tipo'] = $usuario['tipo'];
-        $_SESSION['empresa_id'] = (int) $usuario['empresa_id'];
-        $_SESSION['empresa_nome'] = $usuario['empresa_nome'];
+        $_SESSION['empresa_id'] = (int) ($usuario['empresa_id'] ?? 0);
+        $_SESSION['empresa_nome'] = $usuario['empresa_nome'] ?? 'Admin geral';
 
-        header('Location: /pages/dashboard.php');
+        header('Location: ' . ($usuario['tipo'] === 'superadmin'
+            ? '/pages/empresas.php'
+            : '/pages/dashboard.php'));
         exit;
 
     } else {

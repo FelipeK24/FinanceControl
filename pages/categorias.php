@@ -2,9 +2,9 @@
 
 require_once __DIR__ . '/../includes/auth.php';
 
-exigirLogin();
+exigirEmpresa();
 
-$ehAdmin = $_SESSION['usuario_tipo'] === 'admin';
+$ehAdmin = ehAdminEmpresa();
 
 $editar = isset($_GET['editar']) ? (int) $_GET['editar'] : 0;
 $categoriaEditar = null;

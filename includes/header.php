@@ -3,6 +3,8 @@
 require_once __DIR__ . '/auth.php';
 
 $paginaAtual = basename($_SERVER['PHP_SELF']);
+$ehAdminGeral = $_SESSION['usuario_tipo'] === 'superadmin';
+$empresaSelecionada = (int) ($_SESSION['empresa_id'] ?? 0) > 0;
 
 $tema = $_COOKIE['tema'] ?? 'claro';
 
@@ -34,72 +36,67 @@ if (!in_array($tema, ['claro', 'escuro'], true)) {
             Finance<span>Control</span>
         </div>
 
-        
+        <?php if (!$ehAdminGeral || $empresaSelecionada): ?>
 
-        <p class="menu-label">MENU PRINCIPAL</p>
-
-        <nav>
-
-            <a href="/pages/dashboard.php"
-               class="<?= $paginaAtual === 'dashboard.php' ? 'active' : '' ?>">
-                Visão geral
-            </a>
-
-            <a href="/pages/lancamentos.php"
-               class="<?= $paginaAtual === 'lancamentos.php' ? 'active' : '' ?>">
-                Lançamentos
-            </a>
-
-        </nav>
-
-        
-
-        <p class="menu-label">PLANEJAMENTO</p>
-
-        <nav>
-
-            <a href="/pages/metas.php"
-               class="<?= $paginaAtual === 'metas.php' ? 'active' : '' ?>">
-                Metas financeiras
-            </a>
-
-            <a href="/pages/limites.php"
-               class="<?= $paginaAtual === 'limites.php' ? 'active' : '' ?>">
-                Limites de gastos
-            </a>
-
-            <a href="/pages/recorrencias.php"
-               class="<?= $paginaAtual === 'recorrencias.php' ? 'active' : '' ?>">
-                Recorrências
-            </a>
-
-            <a href="/pages/categorias.php"
-               class="<?= $paginaAtual === 'categorias.php' ? 'active' : '' ?>">
-                Categorias
-            </a>
-
-            <a href="/pages/relatorios.php"
-               class="<?= $paginaAtual === 'relatorios.php' ? 'active' : '' ?>">
-                Relatórios financeiros
-            </a>
-
-        </nav>
-
-        
-
-        <?php if ($_SESSION['usuario_tipo'] === 'admin'): ?>
-
-            <p class="menu-label">ADMINISTRAÇÃO</p>
-
+            <p class="menu-label">MENU PRINCIPAL</p>
             <nav>
-
-                <a href="/pages/usuarios.php"
-                   class="<?= $paginaAtual === 'usuarios.php' ? 'active' : '' ?>">
-                    Equipe
+                <a href="/pages/dashboard.php"
+                   class="<?= $paginaAtual === 'dashboard.php' ? 'active' : '' ?>">
+                    Visão geral
                 </a>
-
+                <a href="/pages/lancamentos.php"
+                   class="<?= $paginaAtual === 'lancamentos.php' ? 'active' : '' ?>">
+                    Lançamentos
+                </a>
             </nav>
 
+            <p class="menu-label">PLANEJAMENTO</p>
+            <nav>
+                <a href="/pages/metas.php"
+                   class="<?= $paginaAtual === 'metas.php' ? 'active' : '' ?>">
+                    Metas financeiras
+                </a>
+                <a href="/pages/limites.php"
+                   class="<?= $paginaAtual === 'limites.php' ? 'active' : '' ?>">
+                    Limites de gastos
+                </a>
+                <a href="/pages/recorrencias.php"
+                   class="<?= $paginaAtual === 'recorrencias.php' ? 'active' : '' ?>">
+                    Recorrências
+                </a>
+                <a href="/pages/categorias.php"
+                   class="<?= $paginaAtual === 'categorias.php' ? 'active' : '' ?>">
+                    Categorias
+                </a>
+                <a href="/pages/relatorios.php"
+                   class="<?= $paginaAtual === 'relatorios.php' ? 'active' : '' ?>">
+                    Relatórios financeiros
+                </a>
+            </nav>
+
+        <?php endif; ?>
+
+        <?php if ($ehAdminGeral): ?>
+            <p class="menu-label">ADMINISTRAÇÃO DO SISTEMA</p>
+            <nav>
+                <a href="/pages/empresas.php"
+                   class="<?= $paginaAtual === 'empresas.php' ? 'active' : '' ?>">
+                    Todas as empresas
+                </a>
+            </nav>
+        <?php endif; ?>
+
+        <?php if ($_SESSION['usuario_tipo'] === 'admin' || ($ehAdminGeral && $empresaSelecionada)): ?>
+            <p class="menu-label">ADMINISTRAÇÃO</p>
+            <nav>
+                <a href="/pages/usuarios.php"
+                   class="<?= $paginaAtual === 'usuarios.php' ? 'active' : '' ?>">
+                    Equipe da empresa
+                </a>
+                <?php if ($ehAdminGeral): ?>
+                    <a href="/pages/empresas.php">Trocar empresa</a>
+                <?php endif; ?>
+            </nav>
         <?php endif; ?>
 
         
@@ -111,9 +108,11 @@ if (!in_array($tema, ['claro', 'escuro'], true)) {
                 <strong><?= e($_SESSION['usuario_nome']) ?></strong>
 
                 <span>
-                    <?= $_SESSION['usuario_tipo'] === 'admin'
-                        ? 'Administrador da empresa'
-                        : 'Funcionário' ?>
+                    <?= $ehAdminGeral
+                        ? 'Administrador geral'
+                        : ($_SESSION['usuario_tipo'] === 'admin'
+                            ? 'Administrador da empresa'
+                            : 'Funcionário') ?>
                 </span>
 
             </div>
