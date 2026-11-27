@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $senha = $_POST['senha'] ?? '';
 
-            $sql = "SELECT u.id, u.nome, u.email, u.senha, u.tipo, u.empresa_id,
+            $sql = "SELECT u.id, u.nome, u.email, u.senha, u.tipo, u.empresa_id, u.tema,
                          e.nome AS empresa_nome
             FROM usuarios u
                      LEFT JOIN empresas e ON e.id = u.empresa_id
@@ -41,6 +41,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['usuario_tipo'] = $usuario['tipo'];
         $_SESSION['empresa_id'] = (int) ($usuario['empresa_id'] ?? 0);
         $_SESSION['empresa_nome'] = $usuario['empresa_nome'] ?? 'Admin geral';
+        $_SESSION['tema'] = in_array($usuario['tema'], ['claro', 'escuro'], true)
+            ? $usuario['tema']
+            : 'claro';
 
         header('Location: ' . ($usuario['tipo'] === 'superadmin'
             ? '/pages/empresas.php'

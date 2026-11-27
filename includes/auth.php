@@ -12,7 +12,7 @@ function exigirLogin() {
     global $pdo;
 
     $stmt = $pdo->prepare(
-        "SELECT u.nome, u.tipo, u.empresa_id, e.nome AS empresa_nome
+        "SELECT u.nome, u.tipo, u.empresa_id, u.tema, e.nome AS empresa_nome
          FROM usuarios u
          LEFT JOIN empresas e ON e.id = u.empresa_id
          WHERE u.id = ?
@@ -30,6 +30,9 @@ function exigirLogin() {
 
     $_SESSION['usuario_nome'] = $usuario['nome'];
     $_SESSION['usuario_tipo'] = $usuario['tipo'];
+    $_SESSION['tema'] = in_array($usuario['tema'], ['claro', 'escuro'], true)
+        ? $usuario['tema']
+        : 'claro';
 
     if ($usuario['tipo'] === 'superadmin') {
         $contextoEmpresaId = (int) ($_SESSION['empresa_contexto_id'] ?? 0);

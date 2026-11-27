@@ -6,7 +6,7 @@ $paginaAtual = basename($_SERVER['PHP_SELF']);
 $ehAdminGeral = $_SESSION['usuario_tipo'] === 'superadmin';
 $empresaSelecionada = (int) ($_SESSION['empresa_id'] ?? 0) > 0;
 
-$tema = $_COOKIE['tema'] ?? 'claro';
+$tema = $_SESSION['tema'] ?? ($_COOKIE['tema'] ?? 'claro');
 
 if (!in_array($tema, ['claro', 'escuro'], true)) {
     $tema = 'claro';

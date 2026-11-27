@@ -17,6 +17,7 @@ CREATE TABLE usuarios (
     email VARCHAR(150) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
     tipo ENUM('superadmin', 'admin', 'usuario') NOT NULL DEFAULT 'usuario',
+    tema ENUM('claro', 'escuro') NOT NULL DEFAULT 'claro',
     KEY idx_usuarios_empresa (empresa_id),
     CONSTRAINT fk_usuarios_empresa
         FOREIGN KEY (empresa_id)

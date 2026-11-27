@@ -20,6 +20,12 @@ if (!in_array($tema, ['claro', 'escuro'], true)) {
     $tema = 'claro';
 }
 
+$stmt = $pdo->prepare(
+    "UPDATE usuarios SET tema = ? WHERE id = ?"
+);
+$stmt->execute([$tema, (int) $_SESSION['usuario_id']]);
+$_SESSION['tema'] = $tema;
+
 setcookie(
     'tema',
     $tema,
